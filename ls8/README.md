@@ -64,6 +64,10 @@ but you'll have to implement those three above instructions first!
 * Note what has been implemented, and what hasn't.
 * Read this whole file.
 * Skim the spec.
+- examples - ls8 files
+- cpu.py - cpu
+- ls8.py - executes cpu
+- README.md - guide
 
 ## Step 1: Add the constructor to `cpu.py`
 
