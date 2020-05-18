@@ -53,7 +53,7 @@ class CPU:
 
     # _Memory Data Register_ (MDR) _Memory Address Register_ (MAR)
     def ram_write(self, MDR, MAR):
-        return self.ram[MAR] = MDR 
+        self.ram[MAR] = MDR 
 
     def trace(self):
         """
@@ -78,15 +78,17 @@ class CPU:
     def run(self):
         """Run the CPU."""
         ir = 0
-        operand_a = self.ram_read(self.pc + 1)
-        operand_b = self.ram_read(self.pc + 2)
+        operand_a = self.pc+1
+        operand_b = self.pc+2
         while True:
             ir = self.ram_read(self.pc)
             if ir == self.hlt:
                 exit()
             elif ir == self.ldi:
-                self.ram_write(int(operand_a, 2), self.pc+1)
-                self.ram_write(int(operand_b, 2), self.pc+2)
+                operand_a = self.ram_read(operand_a)
+                operand_b = self.ram_read(operand_b)
+            elif ir == self.prn:
+                print(operand_b)
 
             self.pc += 1
 
