@@ -1,7 +1,7 @@
 """CPU functionality."""
 
 import sys
-
+import re
 class CPU:
     """Main CPU class."""
 
@@ -18,24 +18,36 @@ class CPU:
 
     def load(self):
         """Load a program into memory."""
-
         address = 0
+        path = "ls8/examples/"
+        try:
+             path += sys.argv[1]
+        except IndexError:
+             print("file is required")
+        
+        with open(path) as file:
+            pattern = re.compile("[01]{8}")
+            for line in file:
+                result = pattern.findall(line)
+                self.ram[address] = int(result[0], 2)
+                address += 1
+        
 
         # For now, we've just hardcoded a program:
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+        # program = [
+        #     # From print8.ls8
+        #     0b10000010, # LDI R0,8
+        #     0b00000000,
+        #     0b00001000,
+        #     0b01000111, # PRN R0
+        #     0b00000000,
+        #     0b00000001, # HLT
+        # ]
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+        # for instruction in program:
+        #     self.ram[address] = instruction
+        #     address += 1
 
 
     def alu(self, op, reg_a, reg_b):
@@ -80,15 +92,19 @@ class CPU:
         ir = 0
         operand_a = self.pc+1
         operand_b = self.pc+2
-        while True:
-            ir = self.ram_read(self.pc)
-            if ir == self.hlt:
-                exit()
-            elif ir == self.ldi:
-                operand_a = self.ram_read(operand_a)
-                operand_b = self.ram_read(operand_b)
-            elif ir == self.prn:
-                print(operand_b)
+        print(self.ram)
+        # while True:
+        #     ir = self.ram_read(self.pc)
 
-            self.pc += 1
+        #     if ir == self.hlt:
+        #         exit()
+        #     elif ir == self.ldi:
+        #         operand_a = self.ram_read(operand_a)
+        #         operand_b = self.ram_read(operand_b)
+        #         self.pc += 3
+        #         continue
+        #     elif ir == self.prn:
+        #         print(operand_b)
+
+        #     self.pc += 1
 
