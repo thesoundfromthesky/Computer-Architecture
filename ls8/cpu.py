@@ -15,11 +15,13 @@ class CPU:
         self.hlt = 0b00000001
         self.ldi = 0b10000010
         self.prn = 0b01000111
+        self.mul = 0b10100010
 
     def load(self):
         """Load a program into memory."""
         address = 0
-        path = "ls8/examples/"
+        # path = "ls8/examples/"
+        path = "ls8/"
         try:
              path += sys.argv[1]
         except IndexError:
@@ -29,9 +31,9 @@ class CPU:
             pattern = re.compile("[01]{8}")
             for line in file:
                 result = pattern.findall(line)
-                self.ram[address] = int(result[0], 2)
-                address += 1
-        
+                if result:
+                     self.ram[address] = int(result.pop(), base=2)
+                     address += 1
 
         # For now, we've just hardcoded a program:
 
@@ -56,6 +58,8 @@ class CPU:
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
         #elif op == "SUB": etc
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
     
@@ -90,21 +94,27 @@ class CPU:
     def run(self):
         """Run the CPU."""
         ir = 0
-        operand_a = self.pc+1
-        operand_b = self.pc+2
-        print(self.ram)
-        # while True:
-        #     ir = self.ram_read(self.pc)
 
-        #     if ir == self.hlt:
-        #         exit()
-        #     elif ir == self.ldi:
-        #         operand_a = self.ram_read(operand_a)
-        #         operand_b = self.ram_read(operand_b)
-        #         self.pc += 3
-        #         continue
-        #     elif ir == self.prn:
-        #         print(operand_b)
+        while True:
+            ir = self.ram_read(self.pc)
+            operand_a = self.pc+1
+            operand_b = self.pc+2
 
-        #     self.pc += 1
-
+            if ir == self.hlt:
+                exit()
+            elif ir == self.ldi:
+                reg_a = self.ram_read(operand_a)              
+                value = self.ram_read(operand_b)
+                self.reg[reg_a]=value
+                self.pc += 3
+            elif ir == self.prn:
+                reg_a = self.ram_read(operand_a)
+                print(self.reg[reg_a])
+                self.pc += 2
+            elif ir == self.mul:
+                reg_a = self.ram_read(operand_a)
+                reg_b = self.ram_read(operand_b)
+                self.alu("MUL", reg_a, reg_b)
+                self.pc += 3
+            else:
+                exit()
