@@ -16,6 +16,36 @@ class CPU:
         self.ldi = 0b10000010
         self.prn = 0b01000111
         self.mul = 0b10100010
+        self.branchtable = {}
+        self.branchtable[self.hlt]=self.handle_htl
+        self.branchtable[self.ldi]=self.handle_ldi
+        self.branchtable[self.prn]=self.handle_prn
+        self.branchtable[self.mul]=self.handle_mul
+    
+    def handle_htl(self):
+        exit()
+    
+    def handle_ldi(self):
+        operand_a = self.pc+1
+        operand_b = self.pc+2
+        reg_a = self.ram_read(operand_a)              
+        value = self.ram_read(operand_b)
+        self.reg[reg_a]=value
+        self.pc += 3
+
+    def handle_prn(self):
+        operand_a = self.pc+1
+        reg_a = self.ram_read(operand_a)
+        print(self.reg[reg_a])
+        self.pc += 2
+
+    def handle_mul(self):
+        operand_a = self.pc+1
+        operand_b = self.pc+2
+        reg_a = self.ram_read(operand_a)
+        reg_b = self.ram_read(operand_b)
+        self.alu("MUL", reg_a, reg_b)
+        self.pc += 3
 
     def load(self):
         """Load a program into memory."""
@@ -95,26 +125,30 @@ class CPU:
         """Run the CPU."""
         ir = 0
 
-        while True:
+        while ir != self.hlt:
             ir = self.ram_read(self.pc)
-            operand_a = self.pc+1
-            operand_b = self.pc+2
+            try:
+                 self.branchtable[ir]()
+            except:
+                exit()
+            # operand_a = self.pc+1
+            # operand_b = self.pc+2
 
-            if ir == self.hlt:
-                exit()
-            elif ir == self.ldi:
-                reg_a = self.ram_read(operand_a)              
-                value = self.ram_read(operand_b)
-                self.reg[reg_a]=value
-                self.pc += 3
-            elif ir == self.prn:
-                reg_a = self.ram_read(operand_a)
-                print(self.reg[reg_a])
-                self.pc += 2
-            elif ir == self.mul:
-                reg_a = self.ram_read(operand_a)
-                reg_b = self.ram_read(operand_b)
-                self.alu("MUL", reg_a, reg_b)
-                self.pc += 3
-            else:
-                exit()
+            # if ir == self.hlt:
+            #     exit()
+            # elif ir == self.ldi:
+            #     reg_a = self.ram_read(operand_a)              
+            #     value = self.ram_read(operand_b)
+            #     self.reg[reg_a]=value
+            #     self.pc += 3
+            # elif ir == self.prn:
+            #     reg_a = self.ram_read(operand_a)
+            #     print(self.reg[reg_a])
+            #     self.pc += 2
+            # elif ir == self.mul:
+            #     reg_a = self.ram_read(operand_a)
+            #     reg_b = self.ram_read(operand_b)
+            #     self.alu("MUL", reg_a, reg_b)
+            #     self.pc += 3
+            # else:
+            #     exit()
