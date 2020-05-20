@@ -7,8 +7,8 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        self.ram=[0x00] * 256
-        self.reg=[0] * 8
+        self.ram=[0x00] * 256        
+        self.reg=[0x00] * 8
         self.reg[7] = 0xF4
         self.pc = 0
         self.fl = 0
@@ -16,13 +16,18 @@ class CPU:
         self.ldi = 0b10000010
         self.prn = 0b01000111
         self.mul = 0b10100010
+        self.push = 0b01000101
+        self.pop = 0b01000110
         self.branchtable = {}
         self.branchtable[self.hlt]=self.handle_htl
         self.branchtable[self.ldi]=self.handle_ldi
         self.branchtable[self.prn]=self.handle_prn
         self.branchtable[self.mul]=self.handle_mul
+        self.branchtable[self.push]=self.handle_push
+        self.branchtable[self.pop]=self.handle_pop
     
     def handle_htl(self):
+        print("exit")
         exit()
     
     def handle_ldi(self):
@@ -46,6 +51,22 @@ class CPU:
         reg_b = self.ram_read(operand_b)
         self.alu("MUL", reg_a, reg_b)
         self.pc += 3
+
+    def handle_push(self):
+        self.reg[7] -= 1
+        operand_a = self.pc+1
+        reg_a = self.ram_read(operand_a)
+        value = self.reg[reg_a]
+        self.ram_write(value, self.reg[7])
+        self.pc += 2
+
+    def handle_pop(self):
+        operand_a = self.pc+1
+        reg_a = self.ram_read(operand_a)
+        value = self.ram_read(self.reg[7])
+        self.reg[reg_a] = value
+        self.reg[7] += 1
+        self.pc += 2 
 
     def load(self):
         """Load a program into memory."""
@@ -124,9 +145,9 @@ class CPU:
     def run(self):
         """Run the CPU."""
         ir = 0
-
         while ir != self.hlt:
             ir = self.ram_read(self.pc)
+            # self.trace()
             try:
                  self.branchtable[ir]()
             except:
