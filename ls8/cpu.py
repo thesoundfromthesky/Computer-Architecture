@@ -15,16 +15,22 @@ class CPU:
         self.hlt = 0b00000001
         self.ldi = 0b10000010
         self.prn = 0b01000111
+        self.add =  0b10100000
         self.mul = 0b10100010
         self.push = 0b01000101
         self.pop = 0b01000110
+        self.call = 0b01010000
+        self.ret = 0b00010001
         self.branchtable = {}
         self.branchtable[self.hlt]=self.handle_htl
         self.branchtable[self.ldi]=self.handle_ldi
         self.branchtable[self.prn]=self.handle_prn
+        self.branchtable[self.add]=self.handle_add
         self.branchtable[self.mul]=self.handle_mul
         self.branchtable[self.push]=self.handle_push
         self.branchtable[self.pop]=self.handle_pop
+        self.branchtable[self.call]=self.handle_call
+        self.branchtable[self.ret]=self.handle_ret
     
     def handle_htl(self):
         print("exit")
@@ -51,6 +57,14 @@ class CPU:
         reg_b = self.ram_read(operand_b)
         self.alu("MUL", reg_a, reg_b)
         self.pc += 3
+    
+    def handle_add(self):
+        operand_a = self.pc+1
+        operand_b = self.pc+2
+        reg_a = self.ram_read(operand_a)
+        reg_b = self.ram_read(operand_b)
+        self.alu("ADD", reg_a, reg_b)
+        self.pc += 3
 
     def handle_push(self):
         self.reg[7] -= 1
@@ -67,6 +81,22 @@ class CPU:
         self.reg[reg_a] = value
         self.reg[7] += 1
         self.pc += 2 
+
+    def handle_call(self):
+        operand_a = self.pc+1
+        operand_b = self.pc+2
+        return_address = operand_b
+        self.reg[7] -= 1
+        self.ram_write(return_address, self.reg[7])
+        reg_a = self.ram_read(operand_a)
+        subroutine_address = self.reg[reg_a]
+        self.pc = subroutine_address
+
+    def handle_ret(self):
+        top_of_stack_addr = self.reg[7]
+        return_addr = self.ram_read(top_of_stack_addr)
+        self.reg[7] += 1
+        self.pc = return_addr
 
     def load(self):
         """Load a program into memory."""
